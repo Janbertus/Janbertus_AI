@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+
+
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Janbertus AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+
+
+<body>
+  <h1>Janbertus AI ✨</h1>
+
+  <!-- Eingabebereich oben -->
+  <label for="question">Deine Frage:</label>
+  <input id="question" type="text" placeholder="z.B. Was ist ein Quantentunnel?" />
+  <div id="status"></div>
+  <button onclick="sendQuestion()">Senden</button>
+
+  <!-- Chatbereich unten -->
+  <div id="chat" class="chatbox"></div>
+
+  <div class="footer">Lokales Ollama-Modell: gpt-oss:20b</div>
+
+  <script src="script.js"></script>
+</body>
+
+
+
+
+
+</html>

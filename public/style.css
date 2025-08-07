@@ -1,0 +1,156 @@
+:root {
+  --bg: #1e1e2f;
+  --fg: #eaeaea;
+  --primary: #4fc3f7;
+  --button-bg: #2a2a3b;
+  --button-hover: #3a3a4b;
+  --font: 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: var(--primary);
+}
+
+label {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+input,
+button {
+  width: 100%;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  border: none;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  font-family: var(--font);
+}
+
+input {
+  background-color: #2c2c3c;
+  color: var(--fg);
+}
+
+button {
+  background-color: var(--button-bg);
+  color: var(--fg);
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--button-hover);
+}
+
+/* ✅ Chatbox-Bereich */
+.chatbox {
+  background-color: #161625;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ✅ Gemeinsamer Chat-Bubble-Style */
+.message {
+  max-width: 90%;
+  padding: 0.9rem 1.2rem;
+  border-radius: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 1rem; /* kannst du auch auf 1.05rem setzen */
+}
+
+/* ✅ Nutzernachricht: rechtsbündig, hellblau */
+.user {
+  align-self: flex-end;
+  background-color: #4fc3f7;
+  color: #000;
+  border-bottom-right-radius: 0.3rem;
+  border-top-right-radius: 0.3rem;
+}
+
+/* ✅ KI-Nachricht: linksbündig, dunkelgrau */
+.assistant {
+  align-self: flex-start;
+  background-color: #2a2a3b;
+  color: #eee;
+  border-bottom-left-radius: 0.3rem;
+  border-top-left-radius: 0.3rem;
+}
+
+/* ✅ Status-Anzeige */
+#status {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+/* ✅ Footer */
+.footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+/* ✅ Dunkle, minimalistische Scrollbar – nur im Chatbereich */
+.chatbox::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chatbox::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatbox::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.chatbox::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}
+
+/* Optionales Styling für Markdown-Elemente */
+.message h1, .message h2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.message ul {
+  padding-left: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+.message code {
+  background: #333;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #ffeb3b;
+}
