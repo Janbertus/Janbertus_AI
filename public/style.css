@@ -154,3 +154,196 @@ button:hover {
   font-family: monospace;
   color: #ffeb3b;
 }
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--primary);
+  cursor: pointer;
+}
+.toggle input {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.toggle-row {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kawaii-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.kawaii-toggle input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-color: #2a2a3b;
+  border: 2px solid var(--primary);
+  cursor: pointer;
+  position: relative;
+}
+
+.kawaii-toggle input[type="checkbox"]:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.kawaii-toggle input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid #1e1e2f;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.kawaii-toggle input[type="checkbox"]:checked::before {
+  opacity: 1;
+}
+
+
+/* Markdown-Korrekturen im Chat */
+.message h1, .message h2, .message h3 {
+  margin: 0.5rem 0 0.3rem;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.message p {
+  margin: 0.3rem 0;
+}
+
+.message ul {
+  margin: 0.5rem 0;
+  padding-left: 1.2rem;
+}
+
+.message li {
+  margin: 0.2rem 0;
+}
+
+.message code {
+  background-color: #333;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.message pre {
+  background-color: #2a2a3b;
+  padding: 0.75rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+/* Toggle-Wrapper */
+.toggle-wrapper {
+  display: flex;
+  justify-content: center;  /* 🟢 Zentriert den Inhalt */
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+
+/* Versteckte Checkbox */
+#kawaii-toggle {
+  display: none;
+}
+
+/* Stil für das Label als Schaltfläche */
+.toggle-label {
+  background-color: #2a2a3b;
+  color: #4fc3f7;
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 0 0 transparent;
+}
+
+.toggle-label:hover {
+  background-color: #3a3a4b;
+}
+
+/* Wenn Checkbox aktiviert ist */
+#kawaii-toggle:checked + .toggle-label {
+  background-color: #ff69b4;
+  color: white;
+  box-shadow: 0 0 8px #ffb6d3;
+  transform: scale(1.02);
+}
+
+.toggle-label .emoji {
+  font-size: 1.2rem;
+}
+
+body.kawaii-mode {
+  --bg: #1f1a2e;
+  --fg: #ffe4f7;
+  --primary: #ff9de2;
+  --button-bg: #3a2d4d;
+  --button-hover: #4b3a5c;
+  font-family: "Comic Sans MS", "Segoe Print", cursive;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle at top left, #2a213a 0%, #1f1a2e 100%);
+  transition: background-color 0.5s ease, color 0.3s ease;
+}
+
+body.kawaii-mode h1 {
+  color: var(--primary);
+  text-shadow: 1px 1px 3px #ffb6d3;
+}
+
+body.kawaii-mode .footer {
+  color: #ffaad7;
+}
+
+body.kawaii-mode .toggle-label {
+  background-color: #ffaad7;
+  color: #1f1a2e;
+  font-weight: bold;
+}
+
+body.kawaii-mode .chatbox {
+  background-color: #2a213a;
+}
+
+body.kawaii-mode .assistant {
+  background-color: #3a2d4d;
+  color: #ffe4f7;
+}
+
+body.kawaii-mode .user {
+  background-color: #ffb3e6;
+  color: #2a213a;
+}
+

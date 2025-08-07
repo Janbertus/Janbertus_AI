@@ -1,32 +1,39 @@
-# Ollama Client (Node.js)
+# 🎀 Janbertus AI - Dein lokaler KI-Chat mit Kawaii-Modus
 
-# 🤖 Janbertus AI
+Eine moderne Chat-Anwendung für lokale Ollama-KI-Modelle mit einem besonderen **Kawaii-Modus** für extra süße Antworten! 💖✨
 
-Ein minimalistisches Node.js-Tool, um mit einem lokal laufenden Ollama KI-Modell wie `gpt-oss:20b` zu kommunizieren.
+![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)
+![Express](https://img.shields.io/badge/Express-5.1.0-blue?logo=express)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+![Kawaii](https://img.shields.io/badge/Kawaii-Modus-pink?logo=heart)
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Node.js](https://img.shields.io/badge/node.js-v18+-green.svg)
-![Express](https://img.shields.io/badge/express-v5.1.0-blue.svg)
+---
 
-## 🌟 Features
+## ✨ Besondere Features
 
-- **🖥️ Moderne Web-Oberfläche**: Saubere, responsive Chat-UI
-- **🧠 Lokale KI-Integration**: Direkte Verbindung zu Ollama-Modellen
-- **📝 Markdown-Support**: Formatierte Antworten mit Code-Highlighting
-- **⚡ Real-time Chat**: Schnelle Antworten ohne Verzögerung
-- **🎨 Ansprechendes Design**: Moderne CSS-Styles mit Animationen
-- **🔒 100% Lokal**: Keine externen APIs, komplette Privatsphäre
+### 🧠 **Dual-Modus System**
+- **Normaler Modus**: Professionelle, sachliche Antworten
+- **🎀 Kawaii-Modus**: Süße Anime-Style Antworten mit japanischen Ausdrücken!
 
-## 🚀 Quick Start
+### 💫 **Weitere Highlights**
+- 📱 **Responsive Web-Interface** - Funktioniert auf allen Geräten
+- 🖥️ **100% Lokal** - Keine externen APIs, komplette Privatsphäre
+- 📝 **Markdown-Support** - Schöne Formatierung mit Code-Highlighting
+- ⚡ **Real-time Chat** - Schnelle Antworten mit Tipp-Animation
+- 🎨 **Modernes Design** - Saubere UI mit CSS-Animationen
 
-### Voraussetzungen
+---
 
-- [Node.js](https://nodejs.org/) (v18 oder höher)
-- [Ollama](https://ollama.ai/) mit installiertem `gpt-oss:20b` Modell
+## 🚀 Schnellstart
 
-### Installation
+### 📋 Voraussetzungen
+- [Node.js](https://nodejs.org/) v18 oder höher
+- [Ollama](https://ollama.com/) installiert und laufend
+- Das Modell `gpt-oss:20b` (oder ein anderes deiner Wahl)
 
-1. **Repository klonen oder herunterladen**
+### ⚙️ Installation
+
+1. **Repository herunterladen**
    ```bash
    git clone https://github.com/Janbertus/Janbertus_AI.git
    cd Janbertus_AI
@@ -37,12 +44,12 @@ Ein minimalistisches Node.js-Tool, um mit einem lokal laufenden Ollama KI-Modell
    npm install
    ```
 
-3. **Ollama starten** (in separatem Terminal)
+3. **Ollama starten** (separates Terminal)
    ```bash
    ollama serve
    ```
 
-4. **GPT-OSS Modell laden** (falls noch nicht geschehen)
+4. **KI-Modell laden**
    ```bash
    ollama pull gpt-oss:20b
    ```
@@ -52,136 +59,169 @@ Ein minimalistisches Node.js-Tool, um mit einem lokal laufenden Ollama KI-Modell
    npm start
    ```
 
-6. **Browser öffnen**: http://localhost:3000
+6. **🌐 Browser öffnen:** http://localhost:3000
 
-## 📁 Projektstruktur
+---
 
+## 🎮 Bedienung
+
+### 💬 **Normal chatten**
+1. Frage in das Eingabefeld tippen
+2. Enter drücken oder "Senden" klicken
+3. Sachliche, professionelle Antwort erhalten
+
+### 🎀 **Kawaii-Modus aktivieren**
+1. Den **💖 Kawaii-Modus** Schalter anklicken
+2. Jetzt dieselbe Frage stellen
+3. Eine süße Anime-Style Antwort bekommen mit:
+   - Kawaii-Emojis: 🌸💖🍓🎀✨
+   - Japanische Ausdrücke: "sugoi!!", "nya~!", "senpai~"
+   - Überdrehte, süße Persönlichkeit
+
+### 📱 **Chat-Features**
+- **Chat-Verlauf** bleibt erhalten
+- **Markdown-Rendering** für schöne Formatierung
+- **Tipp-Animation** während der KI denkt
+- **Responsive Design** für Handy & Desktop
+
+---
+
+## 🛠️ Technische Details
+
+### 📁 **Projektstruktur**
 ```
 Janbertus_AI/
-├── 📄 server.js          # Express.js Backend
-├── 📄 package.json       # NPM Konfiguration
-├── 📄 README.md          # Diese Datei
-└── public/               # Frontend-Dateien
-    ├── 📄 index.html     # Haupt-HTML
-    ├── 📄 script.js      # JavaScript Logic
-    └── 🎨 style.css      # Styling
+├── 📄 server.js          # Express Backend mit Dual-Modus Logic
+├── 📦 package.json       # Dependencies & Scripts
+├── 📖 README.md          # Diese Anleitung
+└── public/               # Frontend
+    ├── 🌐 index.html     # HTML mit Kawaii-Toggle
+    ├── ⚡ script.js      # JavaScript für Chat & Modus-Wechsel
+    └── 🎨 style.css      # Modernes CSS-Design
 ```
 
-## 🛠️ Technologie-Stack
+### 🔧 **Tech-Stack**
+- **Backend:** Node.js + Express.js
+- **Frontend:** Vanilla JavaScript + HTML5 + CSS3
+- **KI-Backend:** Ollama API (`gpt-oss:20b`)
+- **Markdown:** Marked.js für Formatierung
 
-- **Backend**: Node.js + Express.js
-- **Frontend**: Vanilla JavaScript + HTML5 + CSS3
-- **KI-Integration**: Ollama API
-- **Markdown**: Marked.js für formatierte Ausgabe
-
-## ⚙️ Konfiguration
-
-### Modell ändern
-In `server.js` kannst du das Ollama-Modell anpassen:
-
-```javascript
-const response = await axios.post('http://localhost:11434/api/chat', {
-    model: 'dein-gewünschtes-modell',  // z.B. 'llama2', 'mistral'
-    // ...
-});
-```
-
-### Port ändern
-```javascript
-const PORT = 3000; // Ändere hier den Port
-```
-
-## 🎯 Verwendung
-
-1. **Frage eingeben**: Tippe deine Frage in das Eingabefeld
-2. **Enter drücken**: Oder auf "Senden" klicken
-3. **Antwort erhalten**: Die KI antwortet in formatiertem Markdown
-4. **Chat-Verlauf**: Alle Nachrichten bleiben im Chat sichtbar
-
-## 🐛 Troubleshooting
-
-### Häufige Probleme
-
-**Server startet nicht:**
-- Prüfe ob Port 3000 frei ist: `netstat -ano | findstr :3000`
-- Andere Ports mit `PORT=4000 npm start` verwenden
-
-**Keine KI-Antworten:**
-- Ollama läuft: `curl http://localhost:11434/api/tags`
-- Modell verfügbar: `ollama list`
-
-**Verbindungsfehler:**
-- Firewall/Antivirus prüfen
-- Localhost-Zugriff erlauben
-
-## 🚧 Entwicklung
-
-### Features hinzufügen
-```bash
-# Development Server mit Auto-Reload
-npm install -g nodemon
-nodemon server.js
-```
-
-### Geplante Features
-- [ ] 💾 Chat-History speichern
-- [ ] 🎨 Theme-Wechsler (Hell/Dunkel)
-- [ ] 📁 Datei-Upload für Kontext
-- [ ] 🔧 Modell-Switcher in UI
-- [ ] 📊 Token-Counter
-
-## 📝 API Endpoints
-
-### POST `/api/ask`
-Stellt eine Frage an das KI-Modell.
-
-**Request:**
+### 🎯 **API-Endpoint**
+**POST** `/api/ask`
 ```json
 {
-  "question": "Was ist Quantencomputing?"
+  "question": "Erkläre mir Quantenphysik",
+  "kawaii": false  // true für Kawaii-Modus
 }
 ```
 
 **Response:**
 ```json
 {
-  "answer": "# Quantencomputing\n\nQuantencomputing ist..."
+  "answer": "# Quantenphysik\n\nQuantenphysik beschäftigt sich mit..."
 }
 ```
 
-## 🤝 Contributing
+---
 
-1. Fork das Repository
-2. Feature Branch erstellen: `git checkout -b feature/AmazingFeature`
-3. Commit changes: `git commit -m 'Add AmazingFeature'`
-4. Push to branch: `git push origin feature/AmazingFeature`
-5. Pull Request öffnen
+## ⚙️ Anpassungen
 
-## 📜 Lizenz
+### 🤖 **Anderes KI-Modell verwenden**
+In `server.js` Zeile ~31:
+```javascript
+model: 'llama2',  // Statt 'gpt-oss:20b'
+```
 
-Dieses Projekt steht unter der MIT-Lizenz. Siehe `LICENSE` für Details.
+### 🌐 **Port ändern**
+```javascript
+const PORT = 4000;  // Statt 3000
+```
 
-## 🙏 Credits
-
-- **Ollama Team** - Für das fantastische lokale KI-Framework
-- **Express.js** - Für das robuste Web-Framework
-- **Marked.js** - Für Markdown-Parsing
+### 🎀 **Kawaii-Prompt anpassen**
+In `server.js` ab Zeile ~14 findest du den `kawaiiPrompt` - hier kannst du die Persönlichkeit ändern!
 
 ---
 
-**Erstellt mit ❤️ von Janbertus**
+## 🐛 Problemlösungen
 
-*Lokale KI, maximale Kontrolle!* ✨
+### ❌ **Server startet nicht**
+```bash
+# Port bereits belegt? Anderen verwenden:
+PORT=4000 npm start
 
-## 🧠 Was ist Ollama?
+# Oder prüfen was Port 3000 blockiert:
+netstat -ano | findstr :3000
+```
 
-[Ollama](https://ollama.com) ermöglicht es, Sprachmodelle lokal auszuführen. Dieses Tool stellt eine einfache Frage-Antwort-Interaktion mit dem Modell her.
+### 🤖 **Keine KI-Antworten**
+```bash
+# Ollama läuft?
+curl http://localhost:11434/api/tags
 
-## 🚀 Setup
+# Modell verfügbar?
+ollama list
+```
 
-### Voraussetzungen
+### 🌐 **Website lädt nicht**
+- Firewall/Antivirus prüfen
+- `http://localhost:3000` (nicht `https://`)
+- Browser-Cache leeren
 
-- Node.js (empfohlen: LTS-Version)
-- Ollama installiert und Modell geladen:
-  ```bash
-  ollama pull gpt-oss:20b
+---
+
+## 🎨 Screenshots
+
+### Normal-Modus:
+> Professionelle, sachliche Antworten mit sauberem Markdown
+
+### Kawaii-Modus:
+> 🌸💖 Sugoi!! Alles wird super kawaii mit vielen Emojis, nya~! ✨🎀
+
+---
+
+## 🚧 Entwicklung & Erweiterungen
+
+### 🔥 **Development Mode**
+```bash
+# Auto-Reload bei Änderungen
+npm install -g nodemon
+nodemon server.js
+```
+
+### 📝 **Geplante Features**
+- [ ] 💾 Chat-Verlauf speichern
+- [ ] 🌙 Dark/Light Theme Toggle
+- [ ] 📁 Datei-Upload für Kontext
+- [ ] 🔄 Model-Switcher in der UI
+- [ ] 🎵 Kawaii-Sound-Effekte
+- [ ] 📊 Token-Counter & Statistiken
+
+### 🤝 **Contributing**
+1. Fork das Repo
+2. Feature branch: `git checkout -b feature/NeuesFeature`
+3. Commit: `git commit -m 'Add NeuesFeature'`
+4. Push: `git push origin feature/NeuesFeature`
+5. Pull Request erstellen
+
+---
+
+## 📜 Lizenz
+
+MIT License - Siehe `LICENSE` für Details.
+
+## 🙏 Danksagungen
+
+- **Ollama Team** - Für das fantastische lokale KI-Framework
+- **Express.js** - Robustes Web-Framework
+- **Marked.js** - Markdown-Parser
+- **Anime Community** - Inspiration für den Kawaii-Modus! 🎀
+
+---
+
+<div align="center">
+
+**💖 Erstellt mit Liebe von Janbertus 💖**
+
+*Lokale KI war noch nie so süß!* ✨🎀
+
+</div>

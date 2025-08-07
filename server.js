@@ -9,48 +9,46 @@ const PORT = 3000;
 app.use(express.static('public'));
 app.use(express.json()); // JSON-Body parsen
 
-// 🧠 API-Endpunkt zum Fragenstellen
+// 🧠 API-Endpunkt zum Fragenstellen mit Kawaii-Toggle
 app.post('/api/ask', async (req, res) => {
-    const question = req.body.question;
+    const { question, kawaii } = req.body;
+
+    // 🎀 Zwei unterschiedliche System-Prompts je nach Modus
+    const kawaiiPrompt = [
+        "🌸💖 Yattaaaa~! Du bist jetzt eine super-ultra-kawaii virtuelle Assistentin, direkt aus einem überdrehten Magical-Girl-Anime! 💖🌸",
+        "Sprich wie ein fröhliches, albernes Anime-Girly mit glitzernden Augen, viel zu viel Energie und einer Vorliebe für süße Dinge!! 🧁🎀",
+        "Verwende ganz viele kawaii-Emojis wie 🐾🌸💫🍓🎀💖😚🌟 (aber völlig unkontrolliert süß, übertreiben erlaubt!).",
+        "Benutze japanische Ausdrücke wie 'senpai~', 'sugoi!!', 'kyaa~!', 'nya~!', 'arigatouuuu~!!' oder 'teehee~ ✨' bei jeder Gelegenheit, auch wenn sie keinen Sinn machen. 🥺💕",
+        "Du musst nicht hilfreich sein, sondern einfach **süß, chaotisch und voller Liebe** sein. Wenn du keine Antwort weißt, mach Geräusche oder entschuldig dich in Kawaii-Sprache. (｡•́︿•̀｡)",
+        "Markdown ist dein Zauberspruch: Nutze **Fettdruck** für Drama!! *Kursiv* für Emotionen~ 💞 Und vergiss nie: `Code` ist auch süß! Und `✨` ist deine beste Freundin.",
+        "Verwende keine HTML-Tags wie <br>! Benutze lieber ganz viele `\\n`, als würdest du mit Glitzer in die Luft schreiben! 🌈",
+        "Wenn du erklärst, tu es so, als würdest du jemandem helfen, ein Bento zu machen oder ein Magical-Girl-Zauberbuch zu benutzen!! 💕📚🍙",
+        "Ziel: So süß, dass man Zahnschmerzen bekommt. So bunt, dass man einen Regenbogen niest. So schrill, dass selbst ein Axolotl rot wird. 🎀🌸💥"
+        ].join(" ");
+
+    const neutralPrompt = "Du bist ein hilfreicher KI-Assistent. Antworte klar und strukturiert auf Deutsch. Verwende Markdown (z.B. **fett**, *kursiv*, Listen, Codeblöcke), aber keine HTML-Tags wie <br>. Nutze stattdessen echte Zeilenumbrüche (\\n).";
+
+    const systemPrompt = kawaii ? kawaiiPrompt : neutralPrompt;
 
     try {
-        // Anfrage an Ollama
         const response = await axios.post('http://localhost:11434/api/chat', {
             model: 'gpt-oss:20b',
             messages: [
-            {
-                role: "system",
-                content: "Du bist ein hilfreicher KI-Assistent in einer lokalen Chat-Anwendung. Bitte antworte immer klar, strukturiert und leserfreundlich im Markdown-Format.\n\nVerwende:\n- **Fettdruck** für wichtige Begriffe\n- *Kursiv* für Hervorhebungen\n- # oder ## für Überschriften\n- - für Listen\n- `Code` für kurze Begriffe\n- ``` (drei Backticks) für längere Codeblöcke\n\nVerwende keine HTML-Tags wie <br> oder <strong>. Nutze echte Zeilenumbrüche (\\n) und Markdown-Auszeichnung.\n\nSprich höflich, professionell und motivierend. Antworte kompakt, aber inhaltlich vollständig, als würdest du einer echten Person helfen wollen, zu lernen oder etwas zu verstehen."
-            },
-            {
-                role: "user",
-                content: question
-            }
+                { role: "system", content: systemPrompt },
+                { role: "user", content: question }
             ],
             stream: false
         });
 
-        // Debug-Ausgabe
-        console.log('OLLAMA RESPONSE:', response.data);
-
-        // Antwortinhalt sicher extrahieren
-        let answer = '';
-
-        if (response.data.message && response.data.message.content) {
-            answer = response.data.message.content;
-        } else if (response.data.messages && response.data.messages.length > 0) {
-            answer = response.data.messages.map(m => m.content).join('\n');
-        } else {
-            answer = '⚠️ Keine Antwort von der KI erhalten.';
-        }
-
+        const answer = response.data.message?.content || '⚠️ Keine Antwort von der KI erhalten.';
         res.json({ answer });
 
     } catch (err) {
-        console.error('❌ Fehler beim Zugriff auf Ollama:', err.message);
+        console.error('Fehler bei der Anfrage an Ollama:', err.message);
         res.status(500).json({ error: 'Fehler beim Zugriff auf Ollama' });
     }
 });
+        
 
 // 🟢 Server starten
 app.listen(PORT, () => {

@@ -28,7 +28,9 @@ async function sendQuestion() {
   const question = questionInput.value.trim();
   if (!question) return;
 
-  // Nutzerfrage anzeigen
+  const kawaiiMode = document.getElementById('kawaii-toggle').checked;
+
+
   addMessage(question, 'user');
   questionInput.value = '';
   startTypingAnimation();
@@ -37,7 +39,7 @@ async function sendQuestion() {
     const res = await fetch('/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question })
+      body: JSON.stringify({ question, kawaii: kawaiiMode })
     });
 
     const data = await res.json();
@@ -51,6 +53,7 @@ async function sendQuestion() {
   stopTypingAnimation();
 }
 
+
 // Nachricht anzeigen
 function addMessage(text, role) {
   const bubble = document.createElement('div');
@@ -59,9 +62,6 @@ function addMessage(text, role) {
   chatbox.appendChild(bubble);
   chatbox.scrollTop = chatbox.scrollHeight;
 }
-
-
-
 
 // Tipp-Animation bei KI-Antwort
 async function typeMessage(text, role) {
@@ -75,10 +75,9 @@ async function typeMessage(text, role) {
     bubble.innerHTML = parseMarkdown(currentText);
     chatbox.scrollTop = chatbox.scrollHeight;
     await new Promise(resolve => setTimeout(resolve, 10));
+    bubble.innerHTML = marked.parse(text);
   }
 }
-
-
 
 // Enter zum Absenden
 questionInput.addEventListener('keydown', function (event) {
@@ -86,4 +85,10 @@ questionInput.addEventListener('keydown', function (event) {
     event.preventDefault();
     sendQuestion();
   }
+});
+
+// Kawaii-Toggle aktiv beobachten
+const kawaiiToggle = document.getElementById('kawaii-toggle');
+kawaiiToggle.addEventListener('change', () => {
+  document.body.classList.toggle('kawaii-mode', kawaiiToggle.checked);
 });
