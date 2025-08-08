@@ -1,6 +1,5 @@
 const express = require('express');
 const axios = require('axios');
-const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -11,7 +10,7 @@ app.use(express.json()); // JSON-Body parsen
 
 // 🧠 API-Endpunkt zum Fragenstellen mit Kawaii-Toggle
 app.post('/api/ask', async (req, res) => {
-    const { question, kawaii } = req.body;
+    const { question, kawaii, model } = req.body;
 
     // 🎀 Zwei unterschiedliche System-Prompts je nach Modus
     const kawaiiPrompt = [
@@ -29,26 +28,93 @@ app.post('/api/ask', async (req, res) => {
     const neutralPrompt = "Du bist ein hilfreicher KI-Assistent. Antworte klar und strukturiert auf Deutsch. Verwende Markdown (z.B. **fett**, *kursiv*, Listen, Codeblöcke), aber keine HTML-Tags wie <br>. Nutze stattdessen echte Zeilenumbrüche (\\n).";
 
     const systemPrompt = kawaii ? kawaiiPrompt : neutralPrompt;
+    const selectedModel = model || 'gpt-oss:20b'; // Fallback auf Standard-Modell
 
     try {
         const response = await axios.post('http://localhost:11434/api/chat', {
-            model: 'gpt-oss:20b',
+            model: selectedModel,
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: question }
             ],
-            stream: false
+            stream: false,
+            options: {
+                temperature: 0.7,        // Kreativität vs. Konsistenz
+                top_p: 0.9,             // Nucleus Sampling
+                top_k: 40,              // Top-K Sampling  
+                repeat_penalty: 1.1,    // Verhindert Wiederholungen
+                num_ctx: 4096          // Context-Fenster
+            }
         });
 
         const answer = response.data.message?.content || '⚠️ Keine Antwort von der KI erhalten.';
-        res.json({ answer });
+        res.json({ answer, modelUsed: selectedModel });
 
     } catch (err) {
         console.error('Fehler bei der Anfrage an Ollama:', err.message);
-        res.status(500).json({ error: 'Fehler beim Zugriff auf Ollama' });
+        res.status(500).json({ 
+            error: 'Fehler beim Zugriff auf Ollama', 
+            details: err.message,
+            model: selectedModel 
+        });
     }
 });
+
+// 🤖 API-Endpunkt: Verfügbare Ollama-Modelle abrufen
+app.get('/api/models', async (req, res) => {
+    try {
+        const response = await axios.get('http://localhost:11434/api/tags');
+        const models = response.data.models || [];
         
+        // Modelle mit zusätzlichen Infos anreichern
+        const enrichedModels = models.map(model => ({
+            name: model.name,
+            size: model.size,
+            modified: model.modified_at,
+            // Geschätzte Eigenschaften basierend auf Modellnamen
+            category: getModelCategory(model.name),
+            description: getModelDescription(model.name)
+        }));
+
+        res.json({ 
+            models: enrichedModels, 
+            count: models.length,
+            defaultModel: 'gpt-oss:20b' 
+        });
+    } catch (err) {
+        console.error('Fehler beim Abrufen der Modelle:', err.message);
+        res.status(500).json({ 
+            error: 'Ollama nicht erreichbar', 
+            details: err.message,
+            models: [],
+            defaultModel: 'gpt-oss:20b'
+        });
+    }
+});
+
+// 🏷️ Hilfsfunktion: Modell-Kategorie bestimmen
+function getModelCategory(modelName) {
+    const name = modelName.toLowerCase();
+    if (name.includes('llama')) return '🦙 Llama';
+    if (name.includes('gpt')) return '🤖 GPT';
+    if (name.includes('mistral')) return '💨 Mistral';
+    if (name.includes('codellama') || name.includes('code')) return '💻 Code';
+    if (name.includes('phi')) return '🧠 Phi';
+    if (name.includes('gemma')) return '💎 Gemma';
+    return '🎯 Andere';
+}
+
+// 📝 Hilfsfunktion: Modell-Beschreibung
+function getModelDescription(modelName) {
+    const name = modelName.toLowerCase();
+    if (name.includes('7b')) return 'Schnell & effizient (7B Parameter)';
+    if (name.includes('13b')) return 'Ausgewogen (13B Parameter)';
+    if (name.includes('20b')) return 'Leistungsstark (20B Parameter)';
+    if (name.includes('70b')) return 'Sehr leistungsstark (70B Parameter)';
+    if (name.includes('code')) return 'Spezialisiert auf Programmierung';
+    if (name.includes('instruct')) return 'Optimiert für Anweisungen';
+    return 'Allzweck-Sprachmodell';
+}
 
 // 🟢 Server starten
 app.listen(PORT, () => {

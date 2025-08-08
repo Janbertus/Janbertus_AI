@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html lang="de">
-
-
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,38 +8,59 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
-
-
 <body>
   <h1>Janbertus AI ✨</h1>
 
   <!-- Eingabebereich oben -->
   <label for="question">Deine Frage:</label>
-  <input id="question" type="text" placeholder="z.B. Was ist ein Quantentunnel?" />
+  <div class="input-container">
+    <input id="question" type="text" placeholder="" />
+    <button id="suggestion-btn" class="suggestion-button" onclick="sendSuggestion()" title="Vorschlag senden">💡</button>
+  </div>
   <div id="status"></div>
   <button onclick="sendQuestion()">Senden</button>
 
   <div class="toggle-wrapper">
-  <input type="checkbox" id="kawaii-toggle" />
-  <label for="kawaii-toggle" class="toggle-label">
-    <span class="emoji">💖</span> Kawaii-Modus aktivieren
-  </label>
+    <input type="checkbox" id="kawaii-toggle" />
+    <label for="kawaii-toggle" class="toggle-label">
+      <span class="emoji">💖</span> Kawaii-Modus aktivieren
+    </label>
+    
+    <button id="settings-btn" class="settings-button-minimal" onclick="toggleSettings()" title="Einstellungen">⚙️</button>
   </div>
 
+  <!-- ⚙️ Settings Modal -->
+  <div id="settings-modal" class="settings-modal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h3>⚙️ Einstellungen</h3>
+        <button onclick="toggleSettings()" class="close-btn">&times;</button>
+      </div>
+      
+      <div class="settings-body">
+        <div class="setting-group">
+          <label for="model-select-modal">🤖 KI-Modell:</label>
+          <select id="model-select-modal">
+            <option value="">🔄 Lade Modelle...</option>
+          </select>
+          <div id="model-info-modal" class="model-info"></div>
+        </div>
+        
+        <div class="setting-group">
+          <label>📊 Ollama Status:</label>
+          <div id="ollama-status" class="status-indicator">🔄 Prüfe...</div>
+        </div>
+      </div>
+    </div>
   </div>
-
-
 
   <!-- Chatbereich unten -->
   <div id="chat" class="chatbox"></div>
 
-  <div class="footer">Lokales Ollama-Modell: gpt-oss:20b</div>
+  <div class="footer">
+    <span id="model-display">Lokales Ollama-Modell: Lädt...</span>
+  </div>
 
   <script src="script.js"></script>
 </body>
-
-
-
-
-
 </html>
