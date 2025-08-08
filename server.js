@@ -4,13 +4,16 @@ const axios = require('axios');
 const app = express();
 const PORT = 3000;
 
+// 💭 Session-Storage für Konversationen
+const conversations = new Map();
+
 // Statische Dateien aus dem "public"-Ordner bereitstellen
 app.use(express.static('public'));
 app.use(express.json()); // JSON-Body parsen
 
-// 🧠 API-Endpunkt zum Fragenstellen mit Kawaii-Toggle
+// 🧠 API-Endpunkt zum Fragenstellen mit Konversations-Memory
 app.post('/api/ask', async (req, res) => {
-    const { question, kawaii, model } = req.body;
+    const { question, kawaii, model, sessionId = 'default' } = req.body;
 
     // 🎀 Zwei unterschiedliche System-Prompts je nach Modus
     const kawaiiPrompt = [
@@ -30,13 +33,37 @@ app.post('/api/ask', async (req, res) => {
     const systemPrompt = kawaii ? kawaiiPrompt : neutralPrompt;
     const selectedModel = model || 'gpt-oss:20b'; // Fallback auf Standard-Modell
 
+    // 💭 Konversations-Verlauf abrufen oder erstellen
+    if (!conversations.has(sessionId)) {
+        conversations.set(sessionId, []);
+    }
+    
+    const conversation = conversations.get(sessionId);
+    
+    // System-Prompt nur setzen wenn neue Konversation oder Modus geändert
+    const messages = [];
+    if (conversation.length === 0 || conversation[0].content !== systemPrompt) {
+        messages.push({ role: "system", content: systemPrompt });
+        // Bei Modus-Wechsel: Konversation zurücksetzen aber mit Info
+        if (conversation.length > 0) {
+            conversation.length = 0; // Verlauf löschen
+            messages.push({ role: "assistant", content: kawaii ? 
+                "🌸💖 Kyaa~! Ich bin jetzt im super-kawaii Modus, nya~! ✨🎀" : 
+                "Ich bin jetzt im normalen Modus und antworte sachlich." 
+            });
+        }
+    } else {
+        // Bestehende Konversation laden
+        messages.push(...conversation);
+    }
+    
+    // Neue User-Nachricht hinzufügen
+    messages.push({ role: "user", content: question });
+
     try {
         const response = await axios.post('http://localhost:11434/api/chat', {
             model: selectedModel,
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: question }
-            ],
+            messages: messages,
             stream: false,
             options: {
                 temperature: 0.7,        // Kreativität vs. Konsistenz
@@ -48,7 +75,31 @@ app.post('/api/ask', async (req, res) => {
         });
 
         const answer = response.data.message?.content || '⚠️ Keine Antwort von der KI erhalten.';
-        res.json({ answer, modelUsed: selectedModel });
+        
+        // 💭 Konversation in Memory speichern
+        const conversation = conversations.get(sessionId);
+        
+        // System-Prompt hinzufügen falls noch nicht da
+        if (conversation.length === 0) {
+            conversation.push({ role: "system", content: systemPrompt });
+        }
+        
+        // User-Nachricht und KI-Antwort zur Konversation hinzufügen
+        conversation.push({ role: "user", content: question });
+        conversation.push({ role: "assistant", content: answer });
+        
+        // Konversation begrenzen (letzte 20 Nachrichten + System-Prompt)
+        if (conversation.length > 41) { // 1 System + 20 Paare (40) = 41
+            const systemMsg = conversation[0];
+            conversation.splice(0, conversation.length - 40);
+            conversation.unshift(systemMsg);
+        }
+        
+        res.json({ 
+            answer, 
+            modelUsed: selectedModel,
+            conversationLength: conversation.length - 1 // Ohne System-Prompt
+        });
 
     } catch (err) {
         console.error('Fehler bei der Anfrage an Ollama:', err.message);
@@ -58,6 +109,42 @@ app.post('/api/ask', async (req, res) => {
             model: selectedModel 
         });
     }
+});
+
+// 🗑️ API-Endpunkt: Konversation zurücksetzen
+app.post('/api/reset', (req, res) => {
+    const { sessionId = 'default' } = req.body;
+    
+    if (conversations.has(sessionId)) {
+        conversations.delete(sessionId);
+        res.json({ message: 'Konversation zurückgesetzt', sessionId });
+    } else {
+        res.json({ message: 'Keine aktive Konversation gefunden', sessionId });
+    }
+});
+
+// 📊 API-Endpunkt: Konversations-Info
+app.get('/api/conversation/:sessionId', (req, res) => {
+    const sessionId = req.params.sessionId || 'default';
+    const conversation = conversations.get(sessionId) || [];
+    
+    res.json({
+        sessionId,
+        messageCount: Math.max(0, conversation.length - 1), // Ohne System-Prompt
+        hasConversation: conversation.length > 1
+    });
+});
+
+// 📊 API-Endpunkt: Konversations-Info (Default)
+app.get('/api/conversation', (req, res) => {
+    const sessionId = 'default';
+    const conversation = conversations.get(sessionId) || [];
+    
+    res.json({
+        sessionId,
+        messageCount: Math.max(0, conversation.length - 1), // Ohne System-Prompt
+        hasConversation: conversation.length > 1
+    });
 });
 
 // 🤖 API-Endpunkt: Verfügbare Ollama-Modelle abrufen

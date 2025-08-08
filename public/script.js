@@ -5,6 +5,7 @@ const statusText = document.getElementById('status');
 let loadingInterval = null;
 let availableModels = [];
 let currentModel = 'gpt-oss:20b';
+let sessionId = 'default'; // Session für Konversations-Memory
 
 // 🔄 Intelligente Scroll-Funktion - scrollt nur wenn User bereits unten war
 function smartScroll() {
@@ -163,6 +164,55 @@ function toggleSettings() {
     if (availableModels.length === 0) {
       loadAvailableModels();
     }
+    // Konversations-Info aktualisieren
+    loadConversationInfo();
+  }
+}
+
+// 🗑️ Konversation zurücksetzen
+async function resetConversation() {
+  try {
+    const response = await fetch('/api/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId })
+    });
+    
+    const data = await response.json();
+    
+    // UI zurücksetzen
+    chatbox.innerHTML = '';
+    updateConversationInfo(0);
+    
+    // Bestätigung anzeigen
+    addMessage('💭 Konversation wurde zurückgesetzt.', 'assistant');
+    
+  } catch (error) {
+    console.error('Fehler beim Zurücksetzen:', error);
+    addMessage('❌ Fehler beim Zurücksetzen der Konversation.', 'assistant');
+  }
+}
+
+// 📊 Konversations-Info laden
+async function loadConversationInfo() {
+  try {
+    const response = await fetch(`/api/conversation/${sessionId}`);
+    const data = await response.json();
+    updateConversationInfo(data.messageCount);
+  } catch (error) {
+    console.error('Fehler beim Laden der Konversations-Info:', error);
+  }
+}
+
+// 📊 Konversations-Info aktualisieren
+function updateConversationInfo(messageCount) {
+  const conversationInfo = document.getElementById('conversation-info');
+  if (conversationInfo) {
+    if (messageCount === 0) {
+      conversationInfo.textContent = 'Keine Nachrichten';
+    } else {
+      conversationInfo.textContent = `${messageCount} Nachrichten im Verlauf`;
+    }
   }
 }
 
@@ -206,7 +256,8 @@ async function sendQuestion() {
       body: JSON.stringify({ 
         question, 
         kawaii: kawaiiMode,
-        model: selectedModel 
+        model: selectedModel,
+        sessionId: sessionId  // Session-ID für Konversations-Memory
       })
     });
 
@@ -217,6 +268,11 @@ async function sendQuestion() {
     if (data.modelUsed && data.modelUsed !== currentModel) {
       currentModel = data.modelUsed;
       updateModelInfo();
+    }
+    
+    // Konversations-Info aktualisieren
+    if (data.conversationLength !== undefined) {
+      updateConversationInfo(data.conversationLength);
     }
 
     await typeMessage(answer, 'assistant');
