@@ -1,0 +1,45 @@
+{
+  "server": {
+    "port": 3000,
+    "host": "localhost"
+  },
+  "ollama": {
+    "host": "localhost",
+    "port": 11434,
+    "defaultModel": "gpt-oss:20b",
+    "timeout": 30000,
+    "options": {
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "top_k": 40,
+      "repeat_penalty": 1.1,
+      "num_ctx": 4096
+    }
+  },
+  "chat": {
+    "maxConversationLength": 20,
+    "typingSpeed": 20,
+    "autoScroll": true
+  },
+  "ui": {
+    "theme": "light",
+    "language": "de",
+    "enableKawaiiMode": true,
+    "showModelInFooter": true,
+    "enableSuggestions": true,
+    "compactMode": true
+  },
+  "features": {
+    "enableModelSelection": true,
+    "enableConversationReset": true,
+    "enableExampleQuestions": true,
+    "saveConversations": false
+  },
+  "advanced": {
+    "debugMode": false,
+    "logLevel": "info",
+    "enableCors": false,
+    "rateLimitEnabled": false,
+    "rateLimitMax": 100
+  }
+}

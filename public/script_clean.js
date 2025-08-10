@@ -92,24 +92,17 @@ function setRequestInProgress(inProgress) {
     const sendButton = document.getElementById('send-btn');
     const stopButton = document.getElementById('stop-btn');
     const questionInput = document.getElementById('question');
-    const exampleButton = document.getElementById('example-btn');
     const resetButton = document.querySelector('button[onclick="resetConversation()"]');
     
     if (inProgress) {
         if (sendButton) {
             sendButton.disabled = true;
-            sendButton.textContent = '⏳ Denke nach...';
-            sendButton.style.opacity = '0.8';
+            sendButton.textContent = '⏳ Lädt...';
+            sendButton.style.opacity = '0.6';
         }
         
         if (stopButton) {
             stopButton.style.display = 'block';
-        }
-        
-        // Würfel-Button DEAKTIVIEREN während API-Anfrage
-        if (exampleButton) {
-            exampleButton.disabled = true;
-            exampleButton.title = 'Warte auf Antwort...';
         }
         
         if (resetButton) {
@@ -119,9 +112,8 @@ function setRequestInProgress(inProgress) {
         
         if (questionInput) {
             questionInput.disabled = true;
-            questionInput.style.opacity = '0.8';
-            questionInput.placeholder = 'KI antwortet gerade...';
-            questionInput.classList.add('thinking');
+            questionInput.style.opacity = '0.7';
+            questionInput.placeholder = 'Warte auf KI-Antwort...';
         }
     } else {
         if (sendButton) {
@@ -134,11 +126,6 @@ function setRequestInProgress(inProgress) {
             stopButton.style.display = 'none';
         }
         
-        if (exampleButton) {
-            exampleButton.disabled = false;
-            exampleButton.title = 'Zufällige Beispielfrage verwenden';
-        }
-        
         if (resetButton) {
             resetButton.disabled = false;
             resetButton.style.opacity = '1';
@@ -147,7 +134,6 @@ function setRequestInProgress(inProgress) {
         if (questionInput) {
             questionInput.disabled = false;
             questionInput.style.opacity = '1';
-            questionInput.classList.remove('thinking'); // Animation stoppen
             setRandomPlaceholder();
         }
     }
@@ -181,15 +167,6 @@ const exampleQuestions = [
 function setRandomPlaceholder() {
   const randomQuestion = exampleQuestions[Math.floor(Math.random() * exampleQuestions.length)];
   questionInput.placeholder = `z.B. ${randomQuestion}`;
-}
-
-// 🎲 Zufällige Beispielfrage direkt verwenden
-function useRandomExample() {
-  if (isRequestInProgress) return; // Nicht während einer Anfrage
-  
-  const randomQuestion = exampleQuestions[Math.floor(Math.random() * exampleQuestions.length)];
-  questionInput.value = randomQuestion;
-  questionInput.focus(); // Fokus auf Input setzen
 }
 
 // 🤖 Verfügbare Modelle laden
@@ -388,7 +365,7 @@ function addMessage(text, role) {
   }
 }
 
-// 🔮 Tipp-Animation bei KI-Antwort (ohne Partikel)
+// Tipp-Animation bei KI-Antwort
 async function typeMessage(text, role) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${role}`;
@@ -422,56 +399,6 @@ questionInput.addEventListener('keydown', function (event) {
     sendQuestion();
   }
 });
-
-// 🔮 User-Typing Partikel-Effekt - Partikel beim Tippen!
-questionInput.addEventListener('input', function(e) {
-  // Nur Partikel wenn Text hinzugefügt wird (nicht beim Löschen)
-  if (e.inputType && e.inputType.includes('insert') && globalParticleSystem) {
-    const inputElement = e.target;
-    const rect = inputElement.getBoundingClientRect();
-    
-    // 🎯 Cursor-Position berechnen mit einem unsichtbaren Span-Element
-    const cursorX = getCursorPixelPosition(inputElement);
-    const particleX = rect.left + cursorX + Math.random() * 8 - 4; // Kleine Streuung um Cursor
-    const particleY = rect.top + rect.height / 2 + Math.random() * 8 - 4; // Kleine Streuung
-    
-    // 1-2 blaue Partikel pro Tastendruck
-    const particleCount = Math.random() < 0.6 ? 1 : 2;
-    for (let i = 0; i < particleCount; i++) {
-      globalParticleSystem.addTypingParticle(particleX, particleY, '#4fc3f7');
-    }
-  }
-});
-
-// 🎯 Hilfsfunktion: Cursor-Position in Pixeln bestimmen
-function getCursorPixelPosition(inputElement) {
-  const value = inputElement.value;
-  const selectionStart = inputElement.selectionStart;
-  
-  // Temporäres Span-Element erstellen um Textbreite zu messen
-  const tempSpan = document.createElement('span');
-  tempSpan.style.font = window.getComputedStyle(inputElement).font;
-  tempSpan.style.fontSize = window.getComputedStyle(inputElement).fontSize;
-  tempSpan.style.fontFamily = window.getComputedStyle(inputElement).fontFamily;
-  tempSpan.style.visibility = 'hidden';
-  tempSpan.style.position = 'absolute';
-  tempSpan.style.whiteSpace = 'pre';
-  
-  // Text bis zum Cursor hinzufügen
-  tempSpan.textContent = value.substring(0, selectionStart);
-  document.body.appendChild(tempSpan);
-  
-  // Breite messen (= Cursor-Position)
-  const cursorPosition = tempSpan.offsetWidth;
-  
-  // Cleanup
-  document.body.removeChild(tempSpan);
-  
-  // Padding des Input-Elements berücksichtigen (meist 8-12px)
-  const paddingLeft = parseInt(window.getComputedStyle(inputElement).paddingLeft) || 8;
-  
-  return paddingLeft + cursorPosition;
-}
 
 // Kawaii-Toggle aktiv beobachten
 const kawaiiToggle = document.getElementById('kawaii-toggle');
@@ -515,120 +442,4 @@ questionInput.addEventListener('dblclick', () => {
     questionInput.value = questionInput.placeholder.replace('z.B. ', '');
     sendQuestion();
   }
-});
-
-// ✨ ELEGANTE HINTERGRUND-PARTIKEL SYSTEM
-class ParticleSystem {
-  constructor() {
-    this.canvas = document.getElementById('particle-canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.particles = [];
-    this.typingParticles = []; // Neue Array für Typing-Partikel
-    this.maxParticles = 50; // Performance-optimiert
-    
-    this.resize();
-    this.createParticles();
-    this.animate();
-    
-    // Resize-Handler
-    window.addEventListener('resize', () => this.resize());
-  }
-  
-  resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
-  
-  createParticles() {
-    for (let i = 0; i < this.maxParticles; i++) {
-      this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height,
-        vx: (Math.random() - 0.5) * 0.5, // Sehr langsame Bewegung
-        vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.3 + 0.1, // Sehr transparent
-        color: Math.random() > 0.5 ? '#4fc3f7' : '#9c27b0' // Hauptfarben
-      });
-    }
-  }
-  
-  // 🔮 Typing-Partikel hinzufügen
-  addTypingParticle(x, y, color = '#4fc3f7') {
-    this.typingParticles.push({
-      x: x + (Math.random() - 0.5) * 20, // Leichte Streuung
-      y: y + (Math.random() - 0.5) * 10,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 3 - 1, // Nach oben
-      size: Math.random() * 3 + 1,
-      opacity: 0.8,
-      color: color,
-      life: 60, // 2 Sekunden bei 30 FPS
-      maxLife: 60
-    });
-  }
-  
-  animate() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    // Hintergrund-Partikel (unverändert)
-    this.particles.forEach(particle => {
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-      
-      if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
-      if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
-      
-      particle.opacity += Math.sin(Date.now() * 0.001 + particle.x * 0.01) * 0.01;
-      particle.opacity = Math.max(0.05, Math.min(0.4, particle.opacity));
-      
-      this.ctx.globalAlpha = particle.opacity;
-      this.ctx.fillStyle = particle.color;
-      this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
-    
-    // 🔮 Typing-Partikel (NEU!)
-    this.typingParticles.forEach((particle, index) => {
-      // Bewegung
-      particle.x += particle.vx;
-      particle.y += particle.vy;
-      particle.vy += 0.1; // Leichte Schwerkraft
-      
-      // Leben verringern
-      particle.life--;
-      particle.opacity = (particle.life / particle.maxLife) * 0.8;
-      
-      // Zeichnen
-      this.ctx.globalAlpha = particle.opacity;
-      this.ctx.fillStyle = particle.color;
-      this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Entfernen wenn Leben aufgebraucht
-      if (particle.life <= 0) {
-        this.typingParticles.splice(index, 1);
-      }
-    });
-    
-    this.ctx.globalAlpha = 1;
-    
-    // Performance: Nur 30 FPS statt 60
-    setTimeout(() => requestAnimationFrame(() => this.animate()), 33);
-  }
-}
-
-// Globale Referenz für Partikel-System
-let globalParticleSystem = null;
-
-// Partikel-System starten wenn Seite geladen
-document.addEventListener('DOMContentLoaded', () => {
-  // Kurze Verzögerung für smoother Start
-  setTimeout(() => {
-    if (document.getElementById('particle-canvas')) {
-      globalParticleSystem = new ParticleSystem();
-    }
-  }, 500);
 });

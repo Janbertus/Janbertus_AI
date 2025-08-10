@@ -1,10 +1,11 @@
 {
   "name": "janbertus-ai",
   "version": "1.0.0",
-  "description": "Ein einfaches Node.js-Tool zur Kommunikation mit einem lokal laufenden Ollama-Modell (z. B. gpt-oss:20b).",
-  "main": "index.js",
+  "description": "Ein lokales Chat-Interface für Ollama KI-Modelle mit Kawaii-Modus und modernem Web-Design.",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -12,14 +13,18 @@
   },
   "keywords": [
     "ollama",
-    "gpt",
+    "ai",
+    "chat",
     "nodejs",
-    "cli",
-    "ai"
+    "web-interface",
+    "kawaii"
   ],
-  "author": "Dein Name",
+  "author": "Janbertus",
   "license": "MIT",
   "devDependencies": {
     "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

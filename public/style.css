@@ -14,6 +14,20 @@ body {
   padding: 2rem;
   max-width: 900px;
   margin: auto;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ✨ Hintergrund-Partikel Canvas */
+#particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 h1 {
@@ -30,7 +44,6 @@ label {
 
 input,
 button {
-  width: 100%;
   font-size: 1rem;
   margin-top: 0.5rem;
   border-radius: 6px;
@@ -40,11 +53,15 @@ button {
   font-family: var(--font);
 }
 
+/* Nur Input-Felder nehmen die volle Breite */
 input {
+  width: 100%;
   background-color: #2c2c3c;
   color: var(--fg);
+  transition: all 0.3s ease;
 }
 
+/* Buttons haben standardmäßig auto width, außer explizit anders definiert */
 button {
   background-color: var(--button-bg);
   color: var(--fg);
@@ -52,50 +69,170 @@ button {
   transition: background-color 0.3s ease;
 }
 
+/* 💭 Input während Anfrage - subtiler Glow */
+input.thinking {
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.1);
+  animation: input-thinking 3s ease-in-out infinite;
+}
+
+@keyframes input-thinking {
+  0%, 100% { box-shadow: 0 0 10px rgba(79, 195, 247, 0.1); }
+  50% { box-shadow: 0 0 15px rgba(79, 195, 247, 0.2); }
+}
+
 button:hover {
   background-color: var(--button-hover);
 }
 
-/* 💡 Input Container für Suggestion Button */
-.input-container {
-  position: relative;
+/* 🎲 Input Section - Input + Example Button */
+.input-section {
   display: flex;
+  gap: 8px;
+  margin-top: 0.5rem;
+  align-items: stretch;
+}
+
+.input-section input {
+  flex: 1;
+  margin-top: 0 !important;
+}
+
+/* 🎲 Example Button */
+.example-button {
+  width: auto !important;
+  padding: 0.75rem !important;
+  margin: 0 !important;
+  background: linear-gradient(135deg, #9c27b0, #673ab7);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 50px;
+  position: relative;
+  overflow: hidden;
+}
+
+.example-button:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4), 0 0 15px rgba(156, 39, 176, 0.3);
+}
+
+/* ✨ Würfel-Rotation auf Hover */
+.example-button:hover:not(:disabled) {
+  animation: dice-spin 0.6s ease-in-out;
+}
+
+@keyframes dice-spin {
+  0% { transform: translateY(-1px) scale(1.05) rotateY(0deg); }
+  50% { transform: translateY(-1px) scale(1.05) rotateY(180deg); }
+  100% { transform: translateY(-1px) scale(1.05) rotateY(360deg); }
+}
+
+.example-button:disabled {
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+/* ✅ Button-Reihe für Send/Stop */
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
   align-items: center;
 }
 
-.input-container input {
-  flex: 1;
-  margin-top: 0.5rem;
-}
-
-/* 💡 Suggestion Button */
-.suggestion-button {
-  position: absolute;
-  right: 10px;
-  top: 56%;
-  transform: translateY(-50%);
-  width: auto !important;
-  height: auto;
-  padding: 4px !important;
-  margin: 0 !important;
-  background: none;
-  color: var(--fg);
+/* ✅ Send-Button */
+#send-btn {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
   border: none;
-  font-size: 16px;
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  display: none;
-  transition: all 0.2s ease;
-  opacity: 0.6;
+  transition: all 0.3s ease;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
 }
 
-.suggestion-button:hover {
-  opacity: 1;
-  transform: translateY(-50%) scale(1.1);
-  color: var(--primary);
+/* ✨ Eleganter Hover-Effekt mit Glow */
+#send-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4), 0 0 20px rgba(255, 107, 53, 0.2);
 }
 
-.suggestion-button:active {
-  transform: translateY(-50%) scale(0.9);
+/* ✨ Subtiler Shimmer-Effekt auf Hover */
+#send-btn:hover:not(:disabled)::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 1.5s ease-in-out;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+#send-btn:disabled {
+  background: linear-gradient(135deg, #666, #555);
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
+  box-shadow: none;
+  animation: thinking-pulse 2s ease-in-out infinite;
+}
+
+/* 💭 Denkanimation für Send-Button */
+@keyframes thinking-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; box-shadow: 0 0 15px rgba(102, 102, 102, 0.5); }
+}
+
+/* ✅ Stop-Button - Kompakt und rechts */
+#stop-btn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 80px;
+  flex: 0 0 auto;
+}
+
+#stop-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+}
+
+/* 🔒 Wichtig: Glühbirne darf nicht durch Content-Updates verschoben werden */
+.input-container::after {
+  content: '';
+  clear: both;
+  display: table;
+}
+
+/* Chatbox darf Input-Container nicht beeinflussen */
+.chatbox {
+  margin-top: 2rem;
+  clear: both;
 }
 
 /* 🤖 Model Selector */
@@ -278,9 +415,161 @@ button:hover {
   border: 1px solid #444;
   border-radius: 6px;
   padding: 0.75rem;
-  font-size: 0.9rem;
-  font-family: var(--font);
-  margin-bottom: 0.5rem;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#model-select-modal:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(116, 97, 195, 0.2);
+  outline: none;
+}
+
+/* Range Sliders */
+.range-setting {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+input[type="range"] {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #2c2c3c;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.range-value {
+  background-color: #2c2c3c;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 5px 10px;
+  min-width: 60px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+/* Checkbox Styles */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.setting-checkbox {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+/* Save Settings Button */
+.save-settings-button {
+  width: 100%;
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.save-settings-button:hover {
+  background: linear-gradient(135deg, #229954, #27ae60);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+/* 🍞 Toast Notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: toastSlideIn 0.3s ease forwards, toastSlideOut 0.3s ease 2.7s forwards;
+}
+
+.success-toast {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  border: 1px solid #229954;
+}
+
+.error-toast {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  border: 1px solid #a93226;
+}
+
+@keyframes toastSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastSlideOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* 🚫 Disabled States für Buttons während Requests */
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+button:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+input:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
 }
 
 #model-select-modal optgroup {
@@ -352,29 +641,51 @@ button:hover {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* 🔧 DEBUGGING: Fixed gap */
   gap: 0.6rem;
 }
 
 /* ✅ Gemeinsamer Chat-Bubble-Style */
 .message {
   max-width: 90%;
-  padding: 0.6rem 1rem;
+  padding: 0.4rem 1rem;
   border-radius: 1rem;
-  line-height: 1.4;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-size: 1rem; /* kannst du auch auf 1.05rem setzen */
-  height: auto
+  font-size: 1rem;
+  margin: 0 !important;
+  position: relative;
+  animation: messageSlideIn 0.4s ease-out;
+  transition: all 0.3s ease;
 }
 
-/* ✅ Nutzernachricht: rechtsbündig, hellblau */
+/* ✨ Message Slide-in Animation */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ✨ Subtle hover effect on messages */
+.message:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ✅ Nutzernachricht: rechtsbündig, hellblau, Text zentriert */
 .user {
-  align-self: flex-end;
+  align-self: flex-end; /* Box bleibt rechts */
   background-color: #4fc3f7;
   color: #000;
   border-bottom-right-radius: 0.3rem;
   border-top-right-radius: 0.3rem;
-  height: auto
+  text-align: center; /* Nur der TEXT ist zentriert */
 }
 
 /* ✅ KI-Nachricht: linksbündig, dunkelgrau */
@@ -384,14 +695,6 @@ button:hover {
   color: #eee;
   border-bottom-left-radius: 0.3rem;
   border-top-left-radius: 0.3rem;
-  margin-top: 0px;
-}
-
-/* ✅ Status-Anzeige */
-#status {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #aaa;
 }
 
 /* ✅ Footer */

@@ -1,10 +1,28 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
+
+// 📋 Konfiguration laden
+let config;
+try {
+  const configPath = path.join(__dirname, 'config.json');
+  config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  console.log('✅ Konfiguration geladen:', configPath);
+} catch (error) {
+  console.error('❌ Fehler beim Laden der Konfiguration:', error.message);
+  // Fallback Konfiguration
+  config = {
+    server: { port: 3000, host: 'localhost' },
+    ollama: { host: 'localhost', port: 11434, defaultModel: 'gpt-oss:20b' },
+    chat: { maxConversationLength: 20 }
+  };
+}
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || config.server.port;
 
-// 💭 Session-Storage für Konversationen
+// 💭 Session-Storage für Konversationen (nur im Memory, resettet bei Modus-Wechsel)
 const conversations = new Map();
 
 // Statische Dateien aus dem "public"-Ordner bereitstellen
@@ -31,7 +49,8 @@ app.post('/api/ask', async (req, res) => {
     const neutralPrompt = "Du bist ein hilfreicher KI-Assistent. Antworte klar und strukturiert auf Deutsch. Verwende Markdown (z.B. **fett**, *kursiv*, Listen, Codeblöcke), aber keine HTML-Tags wie <br>. Nutze stattdessen echte Zeilenumbrüche (\\n).";
 
     const systemPrompt = kawaii ? kawaiiPrompt : neutralPrompt;
-    const selectedModel = model || 'gpt-oss:20b'; // Fallback auf Standard-Modell
+    const selectedModel = model || config.ollama.defaultModel;
+    const ollamaUrl = `http://${config.ollama.host}:${config.ollama.port}`;
 
     // 💭 Konversations-Verlauf abrufen oder erstellen
     if (!conversations.has(sessionId)) {
@@ -40,38 +59,32 @@ app.post('/api/ask', async (req, res) => {
     
     const conversation = conversations.get(sessionId);
     
-    // System-Prompt nur setzen wenn neue Konversation oder Modus geändert
+    // 💬 Messages für Ollama vorbereiten
     const messages = [];
-    if (conversation.length === 0 || conversation[0].content !== systemPrompt) {
-        messages.push({ role: "system", content: systemPrompt });
-        // Bei Modus-Wechsel: Konversation zurücksetzen aber mit Info
-        if (conversation.length > 0) {
-            conversation.length = 0; // Verlauf löschen
-            messages.push({ role: "assistant", content: kawaii ? 
-                "🌸💖 Kyaa~! Ich bin jetzt im super-kawaii Modus, nya~! ✨🎀" : 
-                "Ich bin jetzt im normalen Modus und antworte sachlich." 
-            });
-        }
-    } else {
-        // Bestehende Konversation laden
-        messages.push(...conversation);
+    messages.push({ role: "system", content: systemPrompt });
+    
+    if (conversation.length > 0) {
+        // Bestehende Konversation - History ohne den alten System-Prompt hinzufügen
+        const conversationHistory = conversation.filter(msg => msg.role !== "system");
+        messages.push(...conversationHistory);
     }
     
-    // Neue User-Nachricht hinzufügen
     messages.push({ role: "user", content: question });
 
     try {
-        const response = await axios.post('http://localhost:11434/api/chat', {
+        const response = await axios.post(`${ollamaUrl}/api/chat`, {
             model: selectedModel,
             messages: messages,
             stream: false,
-            options: {
-                temperature: 0.7,        // Kreativität vs. Konsistenz
-                top_p: 0.9,             // Nucleus Sampling
-                top_k: 40,              // Top-K Sampling  
-                repeat_penalty: 1.1,    // Verhindert Wiederholungen
-                num_ctx: 4096          // Context-Fenster
+            options: config.ollama.options || {
+                temperature: 0.7,
+                top_p: 0.9,
+                top_k: 40,
+                repeat_penalty: 1.1,
+                num_ctx: 4096
             }
+        }, {
+            timeout: config.ollama.timeout || 30000
         });
 
         const answer = response.data.message?.content || '⚠️ Keine Antwort von der KI erhalten.';
@@ -79,19 +92,24 @@ app.post('/api/ask', async (req, res) => {
         // 💭 Konversation in Memory speichern
         const conversation = conversations.get(sessionId);
         
-        // System-Prompt hinzufügen falls noch nicht da
+        // System-Prompt aktualisieren
         if (conversation.length === 0) {
             conversation.push({ role: "system", content: systemPrompt });
+        } else if (conversation[0] && conversation[0].role === "system") {
+            conversation[0].content = systemPrompt; // System-Prompt aktualisieren
+        } else {
+            conversation.unshift({ role: "system", content: systemPrompt });
         }
         
         // User-Nachricht und KI-Antwort zur Konversation hinzufügen
         conversation.push({ role: "user", content: question });
         conversation.push({ role: "assistant", content: answer });
         
-        // Konversation begrenzen (letzte 20 Nachrichten + System-Prompt)
-        if (conversation.length > 41) { // 1 System + 20 Paare (40) = 41
+        // Konversation begrenzen
+        const maxLength = (config.chat.maxConversationLength * 2) + 1; // Paare + System-Prompt
+        if (conversation.length > maxLength) {
             const systemMsg = conversation[0];
-            conversation.splice(0, conversation.length - 40);
+            conversation.splice(0, conversation.length - (maxLength - 1));
             conversation.unshift(systemMsg);
         }
         
@@ -117,93 +135,97 @@ app.post('/api/reset', (req, res) => {
     
     if (conversations.has(sessionId)) {
         conversations.delete(sessionId);
-        res.json({ message: 'Konversation zurückgesetzt', sessionId });
+        res.json({ 
+            success: true, 
+            message: `Konversation ${sessionId} zurückgesetzt` 
+        });
     } else {
-        res.json({ message: 'Keine aktive Konversation gefunden', sessionId });
+        res.json({ 
+            success: false, 
+            message: `Keine Konversation ${sessionId} gefunden` 
+        });
     }
 });
 
-// 📊 API-Endpunkt: Konversations-Info
-app.get('/api/conversation/:sessionId', (req, res) => {
-    const sessionId = req.params.sessionId || 'default';
-    const conversation = conversations.get(sessionId) || [];
-    
-    res.json({
-        sessionId,
-        messageCount: Math.max(0, conversation.length - 1), // Ohne System-Prompt
-        hasConversation: conversation.length > 1
-    });
-});
-
-// 📊 API-Endpunkt: Konversations-Info (Default)
-app.get('/api/conversation', (req, res) => {
-    const sessionId = 'default';
-    const conversation = conversations.get(sessionId) || [];
-    
-    res.json({
-        sessionId,
-        messageCount: Math.max(0, conversation.length - 1), // Ohne System-Prompt
-        hasConversation: conversation.length > 1
-    });
-});
-
-// 🤖 API-Endpunkt: Verfügbare Ollama-Modelle abrufen
+// 📊 API-Endpunkt: Verfügbare Modelle abrufen
 app.get('/api/models', async (req, res) => {
     try {
-        const response = await axios.get('http://localhost:11434/api/tags');
-        const models = response.data.models || [];
+        const ollamaUrl = `http://${config.ollama.host}:${config.ollama.port}`;
+        const response = await axios.get(`${ollamaUrl}/api/tags`, {
+            timeout: 5000
+        });
         
-        // Modelle mit zusätzlichen Infos anreichern
-        const enrichedModels = models.map(model => ({
+        const models = response.data.models?.map(model => ({
             name: model.name,
             size: model.size,
-            modified: model.modified_at,
-            // Geschätzte Eigenschaften basierend auf Modellnamen
-            category: getModelCategory(model.name),
-            description: getModelDescription(model.name)
-        }));
-
+            modified: model.modified_at
+        })) || [];
+        
         res.json({ 
-            models: enrichedModels, 
-            count: models.length,
-            defaultModel: 'gpt-oss:20b' 
+            models,
+            defaultModel: config.ollama.defaultModel,
+            ollamaConnected: true 
         });
     } catch (err) {
         console.error('Fehler beim Abrufen der Modelle:', err.message);
-        res.status(500).json({ 
-            error: 'Ollama nicht erreichbar', 
-            details: err.message,
-            models: [],
-            defaultModel: 'gpt-oss:20b'
+        res.json({ 
+            models: [], 
+            defaultModel: config.ollama.defaultModel,
+            ollamaConnected: false,
+            error: err.message 
         });
     }
 });
 
-// 🏷️ Hilfsfunktion: Modell-Kategorie bestimmen
-function getModelCategory(modelName) {
-    const name = modelName.toLowerCase();
-    if (name.includes('llama')) return '🦙 Llama';
-    if (name.includes('gpt')) return '🤖 GPT';
-    if (name.includes('mistral')) return '💨 Mistral';
-    if (name.includes('codellama') || name.includes('code')) return '💻 Code';
-    if (name.includes('phi')) return '🧠 Phi';
-    if (name.includes('gemma')) return '💎 Gemma';
-    return '🎯 Andere';
-}
+// 🔧 API-Endpunkt: Konfiguration abrufen
+app.get('/api/config', (req, res) => {
+    res.json(config);
+});
 
-// 📝 Hilfsfunktion: Modell-Beschreibung
-function getModelDescription(modelName) {
-    const name = modelName.toLowerCase();
-    if (name.includes('7b')) return 'Schnell & effizient (7B Parameter)';
-    if (name.includes('13b')) return 'Ausgewogen (13B Parameter)';
-    if (name.includes('20b')) return 'Leistungsstark (20B Parameter)';
-    if (name.includes('70b')) return 'Sehr leistungsstark (70B Parameter)';
-    if (name.includes('code')) return 'Spezialisiert auf Programmierung';
-    if (name.includes('instruct')) return 'Optimiert für Anweisungen';
-    return 'Allzweck-Sprachmodell';
-}
+// 🔧 API-Endpunkt: Konfiguration speichern
+app.post('/api/config', (req, res) => {
+    try {
+        const newConfig = req.body;
+        const configPath = path.join(__dirname, 'config.json');
+        
+        fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
+        
+        // Config im Server aktualisieren
+        config = newConfig;
+        
+        res.json({ 
+            success: true, 
+            message: 'Konfiguration gespeichert' 
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
 
-// 🟢 Server starten
+// 📈 API-Endpunkt: Konversations-Status
+app.get('/api/conversation/:sessionId', (req, res) => {
+    const { sessionId } = req.params;
+    const conversation = conversations.get(sessionId);
+    
+    if (conversation) {
+        res.json({
+            sessionId,
+            messageCount: conversation.length - 1, // Ohne System-Prompt
+            hasConversation: conversation.length > 1
+        });
+    } else {
+        res.json({
+            sessionId,
+            messageCount: 0,
+            hasConversation: false
+        });
+    }
+});
+
+// Start des Servers
 app.listen(PORT, () => {
     console.log(`🌐 Server läuft unter http://localhost:${PORT}`);
 });
